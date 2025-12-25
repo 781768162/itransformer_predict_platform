@@ -18,7 +18,7 @@
 
 ### 1.1 用户注册
 
-*   **Endpoint**: `POST /users/register`
+*   **Endpoint**: `POST /user/register`
 *   **描述**: 创建一个新用户账户。
 *   **请求体**:
     ```json
@@ -48,7 +48,7 @@
 
 ### 1.2 用户登录
 
-*   **Endpoint**: `POST /users/login`
+*   **Endpoint**: `POST /user/login`
 *   **描述**: 用户登录以获取认证 Token。
 *   **请求体**:
     ```json
@@ -75,38 +75,17 @@
     }
     ```
 
-### 1.3 用户登出
+### 1.3 用户信息
 
-*   **Endpoint**: `POST /users/logout`
+*   **Endpoint**: `GET /user/userinfo`
 *   **认证**: 需要
-*   **描述**: 用户登出。服务端将当前 token 加入黑名单以使其失效。
+*   **描述**: 返回当前用户信息。
 *   **请求体**: 无
 *   **成功响应 (200 OK)**:
     ```json
     {
       "status": "success",
-      "message": "User logged out successfully"
-    }
-    ```
-*   **失败响应 (401 Unauthorized)**:
-    ```json
-    {
-      "status": "error",
-      "message": "Authentication failed"
-    }
-    ```
-
-### 1.4 用户注销 (删除账户)
-
-*   **Endpoint**: `DELETE /users/me`
-*   **认证**: 需要
-*   **描述**: 删除当前登录用户的账户。
-*   **请求体**: 无
-*   **成功响应 (200 OK)**:
-    ```json
-    {
-      "status": "success",
-      "message": "User account deleted successfully"
+      "message": "User info successfully"
     }
     ```
 *   **失败响应 (401 Unauthorized)**:
