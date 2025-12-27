@@ -1,24 +1,57 @@
 package handler
 
 import (
-	"github.com/gin-gonic/gin"
 	"net/http"
+
+	"gateway/internal/code"
+	"gateway/internal/logic"
+	"gateway/internal/schemas"
+
+	"github.com/gin-gonic/gin"
 )
 
-func Login(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{
-		"msg": "login response",
-	})
+func LoginHandler(c *gin.Context) {
+	var req schemas.LoginRequest
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		status, body := code.ToHTTP(code.ErrInvalidParam)
+		c.JSON(status, body)
+		return
+	}
+
+	token, expireAt, err := logic.LoginLogic(c.Request.Context(), req.UserName, req.Password)
+	if err != nil {
+		status, body := code.ToHTTP(err)
+		c.JSON(status, body)
+		return
+	}
+
+	resp := &schemas.LoginResponse{
+		Token:      token,
+		ExpireTime: expireAt,
+		Message:    "success",
+	}
+	c.JSON(http.StatusOK, resp)
 }
 
-func Register(c *gin.Context) {
-	c.JSON(http.StatusCreated, gin.H{
-		"msg": "register response",
-	})
-}
+func RegisterHandler(c *gin.Context) {
+	var req schemas.RegisterRequest
 
-func UserInfo(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{
-		"msg": "userinfo response",
-	})
+	if err := c.ShouldBindJSON(&req); err != nil {
+		status, body := code.ToHTTP(code.ErrInvalidParam)
+		c.JSON(status, body)
+		return
+	}
+
+	err := logic.RegisterLogic(c.Request.Context(), req.UserName, req.Password)
+	if err != nil {
+		status, body := code.ToHTTP(err)
+		c.JSON(status, body)
+		return
+	}
+
+	resp := &schemas.RegisterResponse{
+		Message: "created",
+	}
+	c.JSON(http.StatusOK, resp)
 }

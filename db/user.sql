@@ -1,0 +1,9 @@
+CREATE TABLE `user` IF NOT EXISTS (
+  `user_id`   BIGINT          NOT NULL AUTO_INCREMENT COMMENT '用户ID',
+  `user_name` VARCHAR(64)     NOT NULL COMMENT '用户名',
+  `password`  VARCHAR(255)    NOT NULL COMMENT '加盐哈希后的密码',
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`user_id`),
+  UNIQUE KEY `uk_user_name` (`user_name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

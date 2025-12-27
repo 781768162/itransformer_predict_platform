@@ -2,6 +2,7 @@ package router
 
 import (
 	"gateway/internal/handler"
+	"gateway/internal/middleware"
 
 	"github.com/gin-gonic/gin"
 )
@@ -9,12 +10,18 @@ import (
 func MustNewRouter() *gin.Engine {
 	r := gin.Default()
 
-	router := r.Group("/api/v1")
+	public := r.Group("/api/v1/user")
 	{
-		router.POST("/user/login", handler.Login)
-		router.POST("/user/register", handler.Register)
-		router.GET("/user/userinfo", handler.UserInfo)
-
+		// 无需鉴权
+		public.POST("/user/login", handler.LoginHandler)
+		public.POST("/user/register", handler.RegisterHandler)
 	}
+
+	protected := r.Group("/api/v1/service")
+	protected.Use(middleware.JwtAuth())
+	{
+		//JWT
+	}
+	
 	return r
 }

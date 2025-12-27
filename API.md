@@ -18,81 +18,39 @@
 
 ### 1.1 用户注册
 
-*   **Endpoint**: `POST /user/register`
+*   **路径**: `POST /user/register`
 *   **描述**: 创建一个新用户账户。
 *   **请求体**:
     ```json
     {
-      "username": "newuser",
-      "password": "securepassword123"
+      "user_name": string,
+      "password": string
     }
     ```
-*   **成功响应 (201 Created)**:
+*   **响应体**:
     ```json
     {
-      "status": "success",
-      "message": "User registered successfully",
-      "data": {
-        "user_id": "uuid-for-newuser",
-        "username": "newuser"
-      }
-    }
-    ```
-*   **失败响应 (400 Bad Request)**:
-    ```json
-    {
-      "status": "error",
-      "message": "Username already exists"
+      "message": string
     }
     ```
 
 ### 1.2 用户登录
 
-*   **Endpoint**: `POST /user/login`
+*   **路径**: `POST /user/login`
 *   **描述**: 用户登录以获取认证 Token。
 *   **请求体**:
     ```json
     {
-      "username": "newuser",
-      "password": "securepassword123"
+      "user_name": string,
+      "password": string
     }
     ```
-*   **成功响应 (200 OK)**:
+*   **响应体**:
     ```json
     {
-      "status": "success",
-      "data": {
-        "token": "your_jwt_token_here",
-        "expires_in": 3600
-      }
-    }
-    ```
-*   **失败响应 (401 Unauthorized)**:
-    ```json
-    {
-      "status": "error",
-      "message": "Invalid username or password"
-    }
-    ```
-
-### 1.3 用户信息
-
-*   **Endpoint**: `GET /user/userinfo`
-*   **认证**: 需要
-*   **描述**: 返回当前用户信息。
-*   **请求体**: 无
-*   **成功响应 (200 OK)**:
-    ```json
-    {
-      "status": "success",
-      "message": "User info successfully"
-    }
-    ```
-*   **失败响应 (401 Unauthorized)**:
-    ```json
-    {
-      "status": "error",
-      "message": "Authentication failed"
+      "token": string,
+      "expire_time": string,
+      "message": string
     }
     ```
 
@@ -102,9 +60,45 @@
 
 这些请求将由 API 网关路由到相应的 Python 算法服务。
 
-### 2.1 发电量预测
+### 2.1 投递任务
 
+*   **路径**: `POST /service/create_task`
+*   **描述**: 投递预测任务，header需要token。
+*   **请求体**:
+    ```json
+    {
+      "user_name": string,
+      "password": string
+    }
+    ```
+*   **响应体**:
+    ```json
+    {
+      "task_id": string,
+      "message": string
+    }
+    ```
 
-### 2.2 用电量预测
+---
+
+### 2.2 查询任务
+
+*   **路径**: `POST /service/get_task`
+*   **描述**: 查询任务状态，header需要token。
+*   **请求体**:
+    ```json
+    {
+      "task_id": string
+    }
+    ```
+*   **响应体**:
+    ```json
+    {
+      "message": string,
+      "result": 
+    }
+    ```
+
+---
 
 
