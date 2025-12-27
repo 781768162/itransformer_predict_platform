@@ -64,17 +64,15 @@
 
 *   **路径**: `POST /service/create_task`
 *   **描述**: 投递预测任务，header需要token。
-*   **请求体**:
-    ```json
-    {
-      "user_name": string,
-      "password": string
-    }
-    ```
+*   **请求体（multipart/form-data）**:
+    * Content-Type: `multipart/form-data`
+    * 字段：
+      * `file`：CSV 文件
+      * `date`：预测开始时间点, string
 *   **响应体**:
     ```json
     {
-      "task_id": string,
+      "task_id": int,
       "message": string
     }
     ```
@@ -88,14 +86,15 @@
 *   **请求体**:
     ```json
     {
-      "task_id": string
+      "task_id": int
     }
     ```
 *   **响应体**:
     ```json
     {
       "message": string,
-      "result": 
+      "status": string,
+      "result": [float, float, ..., float] // 长度 24 的数组，形如 [v0, v1, ... v23]
     }
     ```
 

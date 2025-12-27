@@ -10,7 +10,7 @@ import torch.optim as optim
 from model import iTransformer,LSTM,MixFormer
 from config import Config
 
-def outputing(inputs):#inputs为list,含有pass_data, future_data两项,pass_data形状为torch.Size([1, 72, 13]),future_data的形状为torch.Size([1, 24, 12],其中第一维度为batch_size,可以随意调整,第二维为时间,第三维为特征
+def outputing(inputs: list):#inputs为list,含有pass_data, future_data两项,pass_data形状为torch.Size([1, 72, 13]),future_data的形状为torch.Size([1, 24, 12],其中第一维度为batch_size,可以随意调整,第二维为时间,第三维为特征
     configs = Config()
     model = MixFormer.Model(configs)
 
