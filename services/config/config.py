@@ -6,9 +6,9 @@ from typing import List
 class Settings:
 	task_input_topic: str = "task_input"
 	task_result_topic: str = "task_result"
-	kafka_brokers: List[str] = ("127.0.0.1:9092",)
+	kafka_brokers: List[str] = ("kafka:9092",)
 	kafka_group_id: str = "python-algo"
-	model_path: str = r"save_model\best_Mix_24"
+	model_path: str = "save_model/best_Mix_24"
 
 
 settings = Settings()

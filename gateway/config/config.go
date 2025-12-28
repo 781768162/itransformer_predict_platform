@@ -35,19 +35,19 @@ var Settings = struct {
 }{
 	DB: DBConfig{
 		User: "root",
-		Pass: "",
-		Host: "127.0.0.1",
+		Pass: "root",
+		Host: "mysql",
 		Port: "3306",
-		Name: "",
+		Name: "fintech",
 	},
 	Kafka: KafkaConfig{
-		Brokers:       []string{"127.0.0.1:9092"},
+		Brokers:       []string{"kafka:9092"},
 		ProducerTopic: "task_input",
 		ConsumerTopic: "task_result",
 		GroupID:       "go-gateway",
 	},
 	Server: ServerConfig{
-		Addr:      "localhost:8080",
+		Addr:      "0.0.0.0:8080",
 		UploadDir: "/tmp/uploads",
 	},
 	JWT: JWTConfig{
