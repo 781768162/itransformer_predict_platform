@@ -13,14 +13,16 @@ func MustNewRouter() *gin.Engine {
 	public := r.Group("/api/v1/user")
 	{
 		// 无需鉴权
-		public.POST("/user/login", handler.LoginHandler)
-		public.POST("/user/register", handler.RegisterHandler)
+		public.POST("/login", handler.LoginHandler)
+		public.POST("/register", handler.RegisterHandler)
 	}
 
 	protected := r.Group("/api/v1/service")
 	protected.Use(middleware.JwtAuth())
 	{
 		//JWT
+		protected.POST("/create_task", handler.CreateTaskHandler)
+		protected.POST("/get_task", handler.GetTaskHandler)
 	}
 	
 	return r

@@ -2,6 +2,7 @@ package mq
 
 import (
 	"context"
+	"log"
 	"time"
 
 	"github.com/segmentio/kafka-go"
@@ -34,8 +35,8 @@ func NewConsumer(cfg Config) *kafka.Reader {
 		Brokers:        cfg.Brokers,
 		GroupID:        cfg.GroupID,
 		Topic:          cfg.ConsumerTopic,
-		MinBytes:       1 << 10,     // 1KB
-		MaxBytes:       10 << 20,    // 10MB
+		MinBytes:       1 << 10,  // 1KB
+		MaxBytes:       10 << 20, // 10MB
 		CommitInterval: time.Second,
 	})
 
@@ -57,4 +58,23 @@ func ConsumerLoop(ctx context.Context, c *kafka.Reader, handler func(context.Con
 			return err
 		}
 	}
+}
+
+// StartConsumerWithRetry 启动消费者循环，异常退出后在 ctx 未取消时自动重试。
+func StartConsumerWithRetry(ctx context.Context, cfg Config, handler func(context.Context, kafka.Message) error) {
+	go func() {
+		for {
+			consumer := NewConsumer(cfg)
+			if err := ConsumerLoop(ctx, consumer, handler); err != nil {
+				log.Printf("consumer stopped: %v", err)
+			}
+			consumer.Close()
+
+			if ctx.Err() != nil {
+				return
+			}
+
+			time.Sleep(time.Second)
+		}
+	}()
 }

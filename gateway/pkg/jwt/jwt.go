@@ -4,12 +4,14 @@ import (
 	"errors"
 	"time"
 
+	"gateway/config"
+
 	"github.com/golang-jwt/jwt/v5"
 )
 
 var (
-	ServerSecret    = "testSecretKey012345"
-	ExpireDuration  = time.Hour * 24
+	ServerSecret    = config.Settings.JWT.Secret
+	ExpireDuration  = config.Settings.JWT.ExpireDuration
 	SecretAlgorithm = jwt.SigningMethodHS256
 )
 

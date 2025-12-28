@@ -5,6 +5,7 @@ import "time"
 type Task struct {
 	TaskID        int64    `gorm:"column:task_id;primaryKey;autoIncrement" json:"task_id"`
 	UserID        int64    `gorm:"column:user_id;not null" json:"user_id"`
+	Date          string   `gorm:"column:date;type:varchar(32);not null" json:"date"`
 	Status        string    `gorm:"column:status;type:enum('pending','success','failed');not null;default:'pending'" json:"status"`
 	CreatedAt     time.Time `gorm:"column:created_at;autoCreateTime" json:"created_at"`
 	UpdatedAt     time.Time `gorm:"column:updated_at;autoUpdateTime" json:"updated_at"`

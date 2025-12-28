@@ -1,4 +1,4 @@
-CREATE TABLE `user` IF NOT EXISTS (
+CREATE TABLE IF NOT EXISTS `user`  (
   `user_id`   BIGINT          NOT NULL AUTO_INCREMENT COMMENT '用户ID',
   `user_name` VARCHAR(64)     NOT NULL COMMENT '用户名',
   `password`  VARCHAR(255)    NOT NULL COMMENT '加盐哈希后的密码',

@@ -11,7 +11,7 @@ import (
 	"github.com/segmentio/kafka-go"
 )
 
-// 假设 payload 形如：{"task_id":123,"status":"success","result":[...24 floats...]}
+// payload 格式：{"task_id":123,"status":"success","result":[...24 floats...]}
 type TaskResultPayload struct {
 	TaskID int64    `json:"task_id"`
 	Status string    `json:"status"`
@@ -32,12 +32,12 @@ func HandleTaskResult(ctx context.Context, msg kafka.Message) error {
 		return code.ErrInvalidParam
 	}
 
-	err := crud.UpdateTaskStatus(ctx, payload.TaskID, payload.Status)
+	err := crud.UpdateTaskStatus(ctx, payload.TaskID, payload.Status) // 更新Task状态
 	if err != nil {
 		return code.ErrDatabase
 	}
 
-	err = crud.ClearTaskOutputs(ctx, payload.TaskID)
+	err = crud.ClearTaskOutputs(ctx, payload.TaskID) // 清空对应TaskOutputs
 	if err != nil {
 		return code.ErrDatabase
 	}
@@ -51,7 +51,7 @@ func HandleTaskResult(ctx context.Context, msg kafka.Message) error {
 		})
 	}
 
-	err = crud.CreateTaskOutputs(ctx, outputs)
+	err = crud.CreateTaskOutputs(ctx, outputs) // 写入对应TaskOutputs
 	if err != nil {
 		return code.ErrDatabase
 	}

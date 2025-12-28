@@ -35,16 +35,16 @@ func CreateTaskOutputs(ctx context.Context, outputs []model.TaskOutput) error {
 	return database.DB.WithContext(ctx).Create(&outputs).Error
 }
 
-// GetTaskStatus 查询任务状态。
-func GetTaskStatus(ctx context.Context, taskID int64) (string, error) {
+// GetTaskStatusAndDate 查询任务状态与日期。
+func GetTaskStatusAndDate(ctx context.Context, taskID int64) (string, string, error) {
 	var task model.Task
 	if err := database.DB.WithContext(ctx).
-		Select("status").
+		Select("status", "date").
 		Where("task_id = ?", taskID).
 		First(&task).Error; err != nil {
-		return "", err
+		return "", "", err
 	}
-	return task.Status, nil
+	return task.Status, task.Date, nil
 }
 
 // GetTaskOutputs 查询任务对应的 task_output value 列表（按 time_index 升序）。

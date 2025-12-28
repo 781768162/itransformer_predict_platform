@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"gateway/config"
 	"gateway/internal/code"
 	"gateway/internal/logic"
 	"gateway/internal/schemas"
@@ -16,23 +17,37 @@ import (
 )
 
 func CreateTaskHandler(c *gin.Context) {
-	f, err := c.FormFile("file")
 	date := c.PostForm("date")
-	if err != nil || len(date) == 0 {
+	if date == "" {
 		status, body := code.ToHTTP(code.ErrInvalidParam)
 		c.JSON(status, body)
 		return
 	}
 
-	os.MkdirAll("/tmp/uploads", 0755)
-	dst := filepath.Join("/tmp/uploads", fmt.Sprintf("%d_%s", time.Now().UnixNano(), f.Filename))
-	if err := c.SaveUploadedFile(f, dst); err != nil {
+	passFile, err1 := c.FormFile("passdata_file")
+	futureFile, err2 := c.FormFile("futuredata_file")
+	if err1 != nil || err2 != nil {
+		status, body := code.ToHTTP(code.ErrInvalidParam)
+		c.JSON(status, body)
+		return
+	}
+
+	os.MkdirAll(config.Settings.Server.UploadDir, 0755)
+	passDst := filepath.Join(config.Settings.Server.UploadDir, fmt.Sprintf("%d_pass_%s", time.Now().UnixNano(), passFile.Filename))
+	futureDst := filepath.Join(config.Settings.Server.UploadDir, fmt.Sprintf("%d_future_%s", time.Now().UnixNano(), futureFile.Filename))
+
+	if err := c.SaveUploadedFile(passFile, passDst); err != nil {
+		status, body := code.ToHTTP(code.ErrSaveFile)
+		c.JSON(status, body)
+		return
+	}
+	if err := c.SaveUploadedFile(futureFile, futureDst); err != nil {
 		status, body := code.ToHTTP(code.ErrSaveFile)
 		c.JSON(status, body)
 		return
 	}
 
-	passData, futureData, err := parse.ParseCSV(dst, date) // 解析csv
+	passData, futureData, err := parse.ParseCSV(passDst, futureDst)
 	if err != nil {
 		status, body := code.ToHTTP(code.ErrParseFile)
 		c.JSON(status, body)
@@ -45,9 +60,14 @@ func CreateTaskHandler(c *gin.Context) {
 		c.JSON(status, body)
 		return
 	}
-	userId, _ := userIdVal.(int64)
-	
-	taskId, err := logic.CreateTaskLogic(c.Request.Context(), userId, passData, futureData)
+	userId, ok := userIdVal.(int64)
+	if !ok {
+		status, body := code.ToHTTP(code.ErrInvalidParam)
+		c.JSON(status, body)
+		return
+	}
+
+	taskId, err := logic.CreateTaskLogic(c.Request.Context(), userId, date, passData, futureData)
 	if err != nil {
 		status, body := code.ToHTTP(err)
 		c.JSON(status, body)
@@ -55,7 +75,7 @@ func CreateTaskHandler(c *gin.Context) {
 	}
 
 	resp := &schemas.CreateTaskResponse{
-		TaskId: taskId,
+		TaskId:  taskId,
 		Message: "success",
 	}
 	c.JSON(http.StatusOK, resp)
@@ -69,7 +89,7 @@ func GetTaskHandler(c *gin.Context) {
 		return
 	}
 
-	status, res, err := logic.GetTaskLogic(c.Request.Context(), req.TaskId)
+	status, date, res, err := logic.GetTaskLogic(c.Request.Context(), req.TaskId)
 	if err != nil {
 		status, body := code.ToHTTP(err)
 		c.JSON(status, body)
@@ -78,9 +98,9 @@ func GetTaskHandler(c *gin.Context) {
 
 	resp := &schemas.GetTaskResponse{
 		Message: "",
-		Status: status,
-		Result: res,
+		Status:  status,
+		Date:    date,
+		Result:  res,
 	}
 	c.JSON(http.StatusOK, resp)
 }
-

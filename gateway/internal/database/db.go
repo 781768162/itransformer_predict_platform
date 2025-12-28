@@ -2,8 +2,10 @@ package database
 
 import (
 	"fmt"
-	"os"
 	"time"
+
+	"gateway/config"
+	"gateway/internal/database/model"
 
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -43,24 +45,21 @@ func InitDB(dsn string) error {
 	sqlDB.SetConnMaxLifetime(time.Hour)
 
 	DB = db
+
+	// 自动建表（如果不存在）
+	if err := DB.AutoMigrate(&model.Task{}, &model.TaskOutput{}, &model.User{}); err != nil {
+		return err
+	}
 	return nil
 }
 
 func NewDBHandler() error {
-	cfg := Config{
-		User: getenv("DB_USER", "root"),
-		Pass: getenv("DB_PASS", ""),
-		Host: getenv("DB_HOST", "127.0.0.1"),
-		Port: getenv("DB_PORT", "3306"),
-		Name: getenv("DB_NAME", "fintech"),
-	}
-	dsn := NewDSN(cfg)
+	dsn := NewDSN(Config{
+		User: config.Settings.DB.User,
+		Pass: config.Settings.DB.Pass,
+		Host: config.Settings.DB.Host,
+		Port: config.Settings.DB.Port,
+		Name: config.Settings.DB.Name,
+	})
 	return InitDB(dsn)
-}
-
-func getenv(key, def string) string {
-	if v := os.Getenv(key); v != "" {
-		return v
-	}
-	return def
 }

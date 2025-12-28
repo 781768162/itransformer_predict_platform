@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 
+	"gateway/config"
 	"gateway/internal/code"
 	"gateway/internal/database/crud"
 	"gateway/internal/database/model"
@@ -13,9 +14,16 @@ import (
 )
 
 var (
-	cfg mq.Config
-	prod *kafka.Writer = mq.NewProducer(cfg)
+	prod *kafka.Writer
 )
+
+func init() {
+	cfg := mq.Config{
+		Brokers:       config.Settings.Kafka.Brokers,
+		ProducerTopic: config.Settings.Kafka.ProducerTopic,
+	}
+	prod = mq.NewProducer(cfg)
+}
 
 type taskPayload struct {
     TaskID     int64              `json:"task_id"`
@@ -23,9 +31,10 @@ type taskPayload struct {
     FutureData [12][24]float64  `json:"future_data"`
 }
 
-func CreateTaskLogic(ctx context.Context, userId int64, passData [13][72]float64, futureData [12][24]float64) (int, error) {
+func CreateTaskLogic(ctx context.Context, userId int64, date string, passData [13][72]float64, futureData [12][24]float64) (int, error) {
 	t := &model.Task{
 		UserID: userId,
+		Date:   date,
 		Status: "pending",
 	}
 	err := crud.CreateTask(ctx, t) // 插入记录
@@ -52,16 +61,21 @@ func CreateTaskLogic(ctx context.Context, userId int64, passData [13][72]float64
 	return int(t.TaskID), nil
 }
 
-func GetTaskLogic(ctx context.Context, taskId int) (string, [24]float64, error) {
-	status, err := crud.GetTaskStatus(ctx, int64(taskId))
+func GetTaskLogic(ctx context.Context, taskId int) (string, string, [24]float64, error) {
+	status, date, err := crud.GetTaskStatusAndDate(ctx, int64(taskId))
 	if err != nil {
-		return "", [24]float64{}, code.ErrDatabase
+		return "", "", [24]float64{}, code.ErrDatabase
 	}
 
 	result, err := crud.GetTaskOutputs(ctx, int64(taskId))
 	if err != nil {
-		return "", [24]float64{}, code.ErrDatabase
+		return "", "", [24]float64{}, code.ErrDatabase
 	}
 
-	return status, [24]float64(result), nil
+	var arr [24]float64
+	for i := 0; i < len(result) && i < 24; i++ {
+		arr[i] = result[i]
+	}
+
+	return status, date, arr, nil
 }

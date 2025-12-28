@@ -67,8 +67,9 @@
 *   **请求体（multipart/form-data）**:
     * Content-Type: `multipart/form-data`
     * 字段：
-      * `file`：CSV 文件
-      * `date`：预测开始时间点, string
+      * `passdata_file`：CSV 文件 (73行14列)
+      * `futuredata_file`：CSV 文件 (25行13列)
+      * `date`: string，形如12040100
 *   **响应体**:
     ```json
     {
@@ -94,6 +95,7 @@
     {
       "message": string,
       "status": string,
+      "date": string，形如12040100,
       "result": [float, float, ..., float] // 长度 24 的数组，形如 [v0, v1, ... v23]
     }
     ```
