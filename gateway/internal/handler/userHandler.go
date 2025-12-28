@@ -6,6 +6,7 @@ import (
 	"gateway/internal/code"
 	"gateway/internal/logic"
 	"gateway/internal/schemas"
+	"gateway/pkg/logger"
 
 	"github.com/gin-gonic/gin"
 )
@@ -14,6 +15,7 @@ func LoginHandler(c *gin.Context) {
 	var req schemas.LoginRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
+		logger.Errorf("ShouldBindJSON error: %v", err)
 		status, body := code.ToHTTP(code.ErrInvalidParam)
 		c.JSON(status, body)
 		return
@@ -38,6 +40,7 @@ func RegisterHandler(c *gin.Context) {
 	var req schemas.RegisterRequest
 
 	if err := c.ShouldBindJSON(&req); err != nil {
+		logger.Errorf("ShouldBindJSON error: %v", err)
 		status, body := code.ToHTTP(code.ErrInvalidParam)
 		c.JSON(status, body)
 		return

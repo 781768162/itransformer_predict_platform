@@ -2,8 +2,10 @@ package mq
 
 import (
 	"context"
-	"log"
+	"fmt"
 	"time"
+
+	"gateway/pkg/logger"
 
 	"github.com/segmentio/kafka-go"
 )
@@ -26,20 +28,26 @@ func NewProducer(cfg Config) *kafka.Writer {
 		Async:        false,
 	}
 
+	logger.Infof("New Producer Created")
 	return prod
 }
 
 func NewConsumer(cfg Config) *kafka.Reader {
 	// 异步消费者
 	cons := kafka.NewReader(kafka.ReaderConfig{
-		Brokers:        cfg.Brokers,
-		GroupID:        cfg.GroupID,
-		Topic:          cfg.ConsumerTopic,
-		MinBytes:       1 << 10,  // 1KB
-		MaxBytes:       10 << 20, // 10MB
-		CommitInterval: time.Second,
+		Brokers:               cfg.Brokers,
+		GroupID:               cfg.GroupID,
+		GroupTopics:           []string{cfg.ConsumerTopic},
+		StartOffset:           kafka.FirstOffset,
+		MinBytes:              1 << 10,  // 1KB
+		MaxBytes:              10 << 20, // 10MB
+		CommitInterval:        time.Second,
+		WatchPartitionChanges: true,
+		Logger:                kafka.LoggerFunc(logger.Infof),
+		ErrorLogger:           kafka.LoggerFunc(logger.Errorf),
 	})
 
+	logger.Infof("New Consumer Created")
 	return cons
 }
 
@@ -48,13 +56,16 @@ func NewConsumer(cfg Config) *kafka.Reader {
 func ConsumerLoop(ctx context.Context, c *kafka.Reader, handler func(context.Context, kafka.Message) error) error {
 	for {
 		msg, err := c.FetchMessage(ctx)
+		logger.Infof("Consumer has fetch a message")
 		if err != nil {
+			logger.Errorf("FetchMessage error: %v", err)
 			return err
 		}
 		if err := handler(ctx, msg); err != nil {
 			continue
 		}
 		if err := c.CommitMessages(ctx, msg); err != nil {
+			logger.Errorf("CommitMessages error: %v", err)
 			return err
 		}
 	}
@@ -63,11 +74,14 @@ func ConsumerLoop(ctx context.Context, c *kafka.Reader, handler func(context.Con
 // StartConsumerWithRetry 启动消费者循环，异常退出后在 ctx 未取消时自动重试。
 func StartConsumerWithRetry(ctx context.Context, cfg Config, handler func(context.Context, kafka.Message) error) {
 	go func() {
+		logger.Infof("Consumer Goroutine is running.")
+		fmt.Println("Consumer Goroutine is running.")
 		for {
 			consumer := NewConsumer(cfg)
 			if err := ConsumerLoop(ctx, consumer, handler); err != nil {
-				log.Printf("consumer stopped: %v", err)
+				logger.Errorf("consumer stopped: %v", err)
 			}
+
 			consumer.Close()
 
 			if ctx.Err() != nil {

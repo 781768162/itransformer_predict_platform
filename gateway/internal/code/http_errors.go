@@ -17,7 +17,7 @@ func ToHTTP(err error) (int, BizError) {
 		msg = err.Error()
 	}
 	switch {
-	case errors.Is(err, ErrInvalidParam):
+	case errors.Is(err, ErrInvalidParam), errors.Is(err, ErrPassword), errors.Is(err, ErrJwtExpire):
 		return http.StatusBadRequest, BizError{Status: http.StatusBadRequest, Message: msg}
 	case errors.Is(err, ErrNotFound):
 		return http.StatusNotFound, BizError{Status: http.StatusNotFound, Message: msg}

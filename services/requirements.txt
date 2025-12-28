@@ -1,6 +1,7 @@
 pytorch-lightning == 2.5.0
-pytorch == 2.5.1
 numpy == 1.26.4
+torch == 2.5.1
+pandas
 matplotlib == 3.9.2
 scikit-learn == 1.7.2
 einops == 0.8.1 

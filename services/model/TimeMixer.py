@@ -154,7 +154,9 @@ class Model(nn.Module):
         
         # 投影到预测长度
         dec_out = self.projection(enc_out.transpose(1, 2)).transpose(1, 2)  # [batch_size, pred_len, d_model]
-        
+        dec_out[dec_out<0.15] = 0
+
+
         # 还原归一化
         dec_out = dec_out * \
                   (stdev[:, 0, :].unsqueeze(1).repeat(1, self.pred_len, 1))

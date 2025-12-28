@@ -5,7 +5,7 @@ import time
 import torch
 from kafka import KafkaConsumer, KafkaProducer
 
-from config import settings
+from cfg import settings
 from worker import outputing
 
 
@@ -30,7 +30,6 @@ def make_producer():
 def run_loop():
 	consumer = make_consumer()
 	producer = make_producer()
-	# 生成失败消息并提交 offset
 	try:
 		for msg in consumer:
 			
@@ -58,9 +57,9 @@ def run_loop():
 				consumer.commit()
 				continue
 
-			# 输入已包含 batch 维度，[1,72,13] / [1,24,12]
-			pass_tensor = torch.tensor(pass_data, dtype=torch.float32)
-			future_tensor = torch.tensor(future_data, dtype=torch.float32)
+			# Go 端传来形状为 [13,72] / [12,24]，需转为 [1,72,13] / [1,24,12]
+			pass_tensor = torch.tensor(pass_data, dtype=torch.float32).T.unsqueeze(0)
+			future_tensor = torch.tensor(future_data, dtype=torch.float32).T.unsqueeze(0)
 
 			try:
 				outputs = outputing([pass_tensor, future_tensor])

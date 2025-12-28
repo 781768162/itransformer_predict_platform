@@ -3,14 +3,17 @@ package logic
 import (
 	"context"
 	"encoding/json"
+	"errors"
 
 	"gateway/config"
 	"gateway/internal/code"
 	"gateway/internal/database/crud"
 	"gateway/internal/database/model"
 	"gateway/internal/mq"
+	"gateway/pkg/logger"
 
 	"github.com/segmentio/kafka-go"
+	"gorm.io/gorm"
 )
 
 var (
@@ -39,6 +42,7 @@ func CreateTaskLogic(ctx context.Context, userId int64, date string, passData [1
 	}
 	err := crud.CreateTask(ctx, t) // 插入记录
 	if err != nil {
+		logger.Errorf("CreateTask error: %v", err)
 		return 0, code.ErrDatabase
 	}
 
@@ -48,6 +52,7 @@ func CreateTaskLogic(ctx context.Context, userId int64, date string, passData [1
         FutureData: futureData,
     })
     if err != nil {
+		logger.Errorf("Marshal error: %v", err)
         return 0, code.ErrJsonMarshal
     }
 
@@ -55,6 +60,7 @@ func CreateTaskLogic(ctx context.Context, userId int64, date string, passData [1
 		Value: body,
 	})
 	if err != nil {
+		logger.Errorf("WriteMessages message: %s error: %v", string(body), err)
 		return 0, code.ErrMessageQueue
 	}
 
@@ -64,12 +70,24 @@ func CreateTaskLogic(ctx context.Context, userId int64, date string, passData [1
 func GetTaskLogic(ctx context.Context, taskId int) (string, string, [24]float64, error) {
 	status, date, err := crud.GetTaskStatusAndDate(ctx, int64(taskId))
 	if err != nil {
-		return "", "", [24]float64{}, code.ErrDatabase
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			logger.Errorf("taskId %d not found", taskId)
+			return "", "", [24]float64{}, code.ErrNotFound
+		}else {
+			logger.Errorf("GetTaskStatusAndDate error: %v", err)
+			return "", "", [24]float64{}, code.ErrDatabase
+		}
 	}
 
 	result, err := crud.GetTaskOutputs(ctx, int64(taskId))
 	if err != nil {
-		return "", "", [24]float64{}, code.ErrDatabase
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			logger.Errorf("taskId %d outputs not found", taskId)
+			return "", "", [24]float64{}, code.ErrNotFound
+		}else {
+			logger.Errorf("GetTaskOutputs error: %v", err)
+			return "", "", [24]float64{}, code.ErrDatabase
+		}
 	}
 
 	var arr [24]float64

@@ -10,7 +10,7 @@ import (
 )
 
 var (
-	ServerSecret    = config.Settings.JWT.Secret
+	ServerSecret    = []byte(config.Settings.JWT.Secret)
 	ExpireDuration  = config.Settings.JWT.ExpireDuration
 	SecretAlgorithm = jwt.SigningMethodHS256
 )

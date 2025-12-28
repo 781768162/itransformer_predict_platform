@@ -1,0 +1,17 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Debug test_user.py",
+      "type": "python",
+      "request": "launch",
+      "program": "${workspaceFolder}/test/test_user.py",
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      "args": [],
+      "env": {
+        "PYTHONUNBUFFERED": "1"
+      }
+    }
+  ]
+}
