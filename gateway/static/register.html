@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>注册 - 智光云 V1.0</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    body {
+      background: linear-gradient(135deg, #f5f7fa 0%, #e4efe9 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .register-container {
+      background: white;
+      width: 100%;
+      max-width: 420px;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+    .register-header {
+      background: linear-gradient(135deg, #1a73e8 0%, #34a853 100%);
+      color: white;
+      text-align: center;
+      padding: 30px 20px;
+    }
+    .register-header h1 {
+      font-size: 28px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .register-header p {
+      opacity: 0.9;
+      font-size: 14px;
+    }
+    .register-form {
+      padding: 30px;
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      color: #555;
+      font-size: 14px;
+    }
+    .form-group input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid #e1e5eb;
+      border-radius: 8px;
+      font-size: 16px;
+      transition: border-color 0.3s;
+    }
+    .form-group input:focus {
+      outline: none;
+      border-color: #1a73e8;
+    }
+    .form-group input.error {
+      border-color: #e53935;
+    }
+    .error-message {
+      color: #e53935;
+      font-size: 14px;
+      margin: 8px 0 0 0;
+      display: none;
+    }
+    .register-button {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #1a73e8 0%, #34a853 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s;
+      margin-top: 10px;
+    }
+    .register-button:hover {
+      transform: translateY(-2px);
+    }
+    .register-button:active {
+      transform: translateY(0);
+    }
+    .register-button:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .login-link {
+      text-align: center;
+      margin-top: 25px;
+      color: #666;
+      font-size: 14px;
+    }
+    .login-link a {
+      color: #1a73e8;
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .login-link a:hover {
+      text-decoration: underline;
+    }
+    .terms {
+      text-align: center;
+      margin-top: 15px;
+      color: #888;
+      font-size: 12px;
+    }
+    .terms a {
+      color: #1a73e8;
+      text-decoration: none;
+    }
+    .terms a:hover {
+      text-decoration: underline;
+    }
+    .success-message {
+      background: #d4edda;
+      color: #155724;
+      padding: 12px;
+      border-radius: 6px;
+      margin-bottom: 20px;
+      text-align: center;
+      border: 1px solid #c3e6cb;
+      display: none;
+    }
+    /* 响应式设计 */
+    @media (max-width: 480px) {
+      .register-container {
+        margin: 10px;
+      }
+      .register-form {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="register-container">
+    <div class="register-header">
+      <h1>智光云 V1.0</h1>
+      <p>智能发电预测平台</p>
+    </div>
+    <div class="register-form">
+      <div id="successMessage" class="success-message">
+        ✅ 注册成功！正在跳转到登录页面...
+      </div>
+      
+      <form id="registerForm">
+        <div class="form-group">
+          <label for="username">用户名</label>
+          <input 
+            type="text" 
+            id="username" 
+            placeholder="请输入用户名（至少3位）" 
+            required
+          >
+          <div class="error-message" id="usernameError"></div>
+        </div>
+        
+        <div class="form-group">
+          <label for="password">密码</label>
+          <input 
+            type="password" 
+            id="password" 
+            placeholder="请输入密码（至少6位）" 
+            required
+          >
+          <div class="error-message" id="passwordError"></div>
+        </div>
+        
+        <div class="form-group">
+          <label for="confirmPassword">确认密码</label>
+          <input 
+            type="password" 
+            id="confirmPassword" 
+            placeholder="请再次输入密码" 
+            required
+          >
+          <div class="error-message" id="confirmPasswordError"></div>
+        </div>
+        
+        <button type="submit" class="register-button" id="registerBtn">注册</button>
+      </form>
+      
+      <div class="login-link">
+        已有账号？<a href="login.html">立即登录</a>
+      </div>
+      
+      <div class="terms">
+        注册即表示您同意我们的<a href="#">服务条款</a>和<a href="#">隐私政策</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ===== API 基础配置 =====
+    const API_BASE_URL = '/api/v1';
+
+    // 通用请求函数
+    async function request(url, options = {}) {
+      const fullUrl = `${API_BASE_URL}${url}`;
+      const defaultOptions = {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include'
+      };
+      const requestOptions = { ...defaultOptions, ...options };
+
+      try {
+        const response = await fetch(fullUrl, requestOptions);
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.message || `请求失败：${response.status}`);
+        }
+        return data;
+      } catch (error) {
+        console.error('API请求错误：', error);
+        return Promise.reject(error);
+      }
+    }
+
+    // 注册API
+    async function registerApi(username, password) {
+      return request('/user/register', {
+        body: JSON.stringify({ user_name: username, password })
+      });
+    }
+
+    // 注册表单提交处理
+    document.getElementById('registerForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+      
+      // 重置错误信息
+      resetErrors();
+      
+      let isValid = true;
+      
+      // 前端验证
+      if (!username) {
+        showError('usernameError', '请输入用户名');
+        isValid = false;
+      } else if (username.length < 3) {
+        showError('usernameError', '用户名至少需要3个字符');
+        isValid = false;
+      }
+      
+      if (!password) {
+        showError('passwordError', '请输入密码');
+        isValid = false;
+      } else if (password.length < 6) {
+        showError('passwordError', '密码长度至少6位');
+        isValid = false;
+      }
+      
+      if (!confirmPassword) {
+        showError('confirmPasswordError', '请确认密码');
+        isValid = false;
+      } else if (password !== confirmPassword) {
+        showError('confirmPasswordError', '两次输入的密码不一致');
+        isValid = false;
+      }
+      
+      if (!isValid) return;
+      
+      const button = document.getElementById('registerBtn');
+      button.textContent = '注册中...';
+      button.disabled = true;
+      
+      try {
+        // 调用注册API
+        const response = await registerApi(username, password);
+        
+        // 注册成功
+        document.getElementById('successMessage').style.display = 'block';
+        document.getElementById('registerForm').style.display = 'none';
+        button.textContent = '注册';
+        button.disabled = false;
+        
+        // 3秒后跳转到登录页
+        setTimeout(() => {
+          window.location.href = 'login.html';
+        }, 3000);
+        
+      } catch (error) {
+        button.textContent = '注册';
+        button.disabled = false;
+        
+        if (error.message.includes('already exists') || error.message.includes('已存在')) {
+          showError('usernameError', '该用户名已被占用');
+        } else {
+          alert(`注册失败：${error.message}`);
+        }
+      }
+    });
+
+    function showError(elementId, message) {
+      const errorElement = document.getElementById(elementId);
+      errorElement.textContent = message;
+      errorElement.style.display = 'block';
+      document.getElementById(elementId.replace('Error', '')).classList.add('error');
+    }
+
+    function resetErrors() {
+      const errorElements = document.querySelectorAll('.error-message');
+      errorElements.forEach(el => {
+        el.style.display = 'none';
+        el.textContent = '';
+      });
+      
+      const inputElements = document.querySelectorAll('input');
+      inputElements.forEach(input => input.classList.remove('error'));
+    }
+
+    // 输入框实时验证
+    document.getElementById('username').addEventListener('input', function() {
+      document.getElementById('usernameError').style.display = 'none';
+      this.classList.remove('error');
+    });
+    
+    document.getElementById('password').addEventListener('input', function() {
+      document.getElementById('passwordError').style.display = 'none';
+      this.classList.remove('error');
+    });
+    
+    document.getElementById('confirmPassword').addEventListener('input', function() {
+      document.getElementById('confirmPasswordError').style.display = 'none';
+      this.classList.remove('error');
+    });
+  </script>
+</body>
+</html>

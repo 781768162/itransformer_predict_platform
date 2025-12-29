@@ -6,6 +6,8 @@ services:
       - "8080:8080"
     volumes:
       - ./gateway/tmp/uploads:/app/tmp/uploads
+      - ./gateway/log:/app/log
+      - ./gateway/static:/app/static
     depends_on:
       - mysql
       - kafka
@@ -50,6 +52,7 @@ services:
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT"
       KAFKA_CONTROLLER_LISTENER_NAMES: "CONTROLLER"
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE: "true"
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1

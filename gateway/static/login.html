@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>登录 - 智光云 V1.0</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    body {
+      background: linear-gradient(135deg, #f5f7fa 0%, #e4efe9 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .login-container {
+      background: white;
+      width: 100%;
+      max-width: 420px;
+      border-radius: 12px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      overflow: hidden;
+    }
+    .login-header {
+      background: linear-gradient(135deg, #1a73e8 0%, #34a853 100%);
+      color: white;
+      text-align: center;
+      padding: 30px 20px;
+    }
+    .login-header h1 {
+      font-size: 28px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .login-header p {
+      opacity: 0.9;
+      font-size: 14px;
+    }
+    .login-form {
+      padding: 30px;
+    }
+    .form-group {
+      margin-bottom: 20px;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+      color: #555;
+      font-size: 14px;
+    }
+    .form-group input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid #e1e5eb;
+      border-radius: 8px;
+      font-size: 16px;
+      transition: border-color 0.3s;
+    }
+    .form-group input:focus {
+      outline: none;
+      border-color: #1a73e8;
+    }
+    .remember-forgot {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 25px;
+      font-size: 14px;
+    }
+    .remember {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .forgot-link {
+      color: #1a73e8;
+      text-decoration: none;
+    }
+    .forgot-link:hover {
+      text-decoration: underline;
+    }
+    .login-button {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #1a73e8 0%, #34a853 100%);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    .login-button:hover {
+      transform: translateY(-2px);
+    }
+    .login-button:active {
+      transform: translateY(0);
+    }
+    .register-link {
+      text-align: center;
+      margin-top: 25px;
+      color: #666;
+      font-size: 14px;
+    }
+    .register-link a {
+      color: #1a73e8;
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .register-link a:hover {
+      text-decoration: underline;
+    }
+    .error-message {
+      color: #e53935;
+      font-size: 14px;
+      margin: 8px 0 0 0;
+      display: none;
+    }
+    /* 响应式设计 */
+    @media (max-width: 480px) {
+      .login-container {
+        margin: 10px;
+      }
+      
+      .login-form {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <div class="login-header">
+      <h1>智光云 V1.0</h1>
+      <p>智能发电预测平台</p>
+    </div>
+    <form class="login-form" id="loginForm">
+      <div class="form-group">
+        <label for="username">用户名</label>
+        <input 
+          type="text" 
+          id="username" 
+          placeholder="请输入用户名" 
+          required
+        >
+        <div class="error-message" id="usernameError"></div>
+      </div>
+      <div class="form-group">
+        <label for="password">密码</label>
+        <input 
+          type="password" 
+          id="password" 
+          placeholder="请输入密码" 
+          required
+        >
+        <div class="error-message" id="passwordError"></div>
+      </div>
+      <div class="remember-forgot">
+        <div class="remember">
+          <input type="checkbox" id="remember">
+          <label for="remember">记住我</label>
+        </div>
+        <a href="#" class="forgot-link">忘记密码？</a>
+      </div>
+      <button type="submit" class="login-button">登录</button>
+      <div class="register-link">
+        还没有账号？<a href="register.html" id="registerLink">立即注册</a>
+      </div>
+    </form>
+  </div>
+  <script>
+    // ===== API 基础配置 =====
+    const API_BASE_URL = '/api/v1';
+
+    // Token 管理工具
+    const TokenManager = {
+      getToken() {
+        return localStorage.getItem('authToken');
+      },
+      setToken(token, expireTimeSeconds) {
+        // 后端返回秒级时间戳，这里存成毫秒时间戳便于比较
+        const expireMs = Number(expireTimeSeconds) * 1000;
+        localStorage.setItem('authToken', token);
+        localStorage.setItem('tokenExpire', String(expireMs));
+      },
+      clearToken() {
+        localStorage.removeItem('authToken');
+        localStorage.removeItem('tokenExpire');
+      },
+      isTokenValid() {
+        const token = this.getToken();
+        const expireMs = Number(localStorage.getItem('tokenExpire'));
+        if (!token || !expireMs) return false;
+        return Date.now() < expireMs;
+      }
+    };
+
+    // 通用请求函数
+    async function request(url, options = {}) {
+      const fullUrl = `${API_BASE_URL}${url}`;
+      const defaultOptions = {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include'
+      };
+      const requestOptions = { ...defaultOptions, ...options };
+
+      try {
+        const response = await fetch(fullUrl, requestOptions);
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.message || `请求失败：${response.status}`);
+        }
+        return data;
+      } catch (error) {
+        console.error('API请求错误：', error);
+        return Promise.reject(error);
+      }
+    }
+
+    // 登录API
+    async function loginApi(username, password) {
+      return request('/user/login', {
+        body: JSON.stringify({ user_name: username, password })
+      });
+    }
+
+    // 登录表单提交处理
+    document.getElementById('loginForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      const usernameError = document.getElementById('usernameError');
+      const passwordError = document.getElementById('passwordError');
+      const remember = document.getElementById('remember').checked;
+      
+      // 重置错误信息
+      usernameError.style.display = 'none';
+      passwordError.style.display = 'none';
+      
+      let isValid = true;
+      
+      // 前端验证
+      if (!username) {
+        usernameError.textContent = '请输入用户名';
+        usernameError.style.display = 'block';
+        isValid = false;
+      }
+      
+      if (!password) {
+        passwordError.textContent = '请输入密码';
+        passwordError.style.display = 'block';
+        isValid = false;
+      } else if (password.length < 6) {
+        passwordError.textContent = '密码长度至少6位';
+        passwordError.style.display = 'block';
+        isValid = false;
+      }
+      
+      if (isValid) {
+        const button = document.querySelector('.login-button');
+        button.textContent = '登录中...';
+        button.disabled = true;
+        
+        try {
+          // 调用真实登录API
+          const response = await loginApi(username, password);
+          // 保存Token和过期时间
+          TokenManager.setToken(response.token, response.expire_time);
+          
+          // 记住用户名
+          if (remember) {
+            localStorage.setItem('rememberedUsername', username);
+          } else {
+            localStorage.removeItem('rememberedUsername');
+          }
+          
+          alert(`登录成功！${response.message}`);
+          window.location.href = 'zgy.html';
+        } catch (error) {
+          passwordError.textContent = error.message;
+          passwordError.style.display = 'block';
+          button.textContent = '登录';
+          button.disabled = false;
+        }
+      }
+    });
+
+    // 注册链接点击事件 - 修改为直接跳转到注册页面
+    document.getElementById('registerLink').addEventListener('click', function(e) {
+      e.preventDefault();
+      // 直接跳转到注册页面
+      window.location.href = 'register.html';
+    });
+
+    // 输入框实时验证
+    document.getElementById('username').addEventListener('input', function() {
+      document.getElementById('usernameError').style.display = 'none';
+    });
+    document.getElementById('password').addEventListener('input', function() {
+      document.getElementById('passwordError').style.display = 'none';
+    });
+
+    // 页面加载时填充记住的用户名
+    window.addEventListener('load', function() {
+      const rememberedUsername = localStorage.getItem('rememberedUsername');
+      if (rememberedUsername) {
+        document.getElementById('username').value = rememberedUsername;
+        document.getElementById('remember').checked = true;
+      }
+    });
+  </script>
+</body>
+</html>

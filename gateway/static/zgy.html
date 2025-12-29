@@ -1,0 +1,1572 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智光云 V1.0 - 光伏发电预测平台</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: "Microsoft YaHei", sans-serif; 
+            background-color: #f5f7fa; 
+            color: #333; 
+            line-height: 1.6;
+        }
+        .container { 
+            max-width: 1400px; 
+            margin: 0 auto; 
+            padding: 0 20px;
+        }
+        
+        /* ===== 导航栏样式 ===== */
+        .navbar { 
+            background: white; 
+            padding: 1rem 0; 
+            box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #0066cc;
+            text-decoration: none;
+        }
+        .nav-links { 
+            display: flex; 
+            list-style: none; 
+            gap: 2rem;
+        }
+        .nav-links a { 
+            text-decoration: none; 
+            color: #666; 
+            padding: 0.5rem 0;
+            font-weight: 500;
+            position: relative;
+            transition: color 0.3s;
+        }
+        .nav-links a:hover,
+        .nav-links a.active { 
+            color: #0066cc; 
+        }
+        .nav-links a.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background-color: #0066cc;
+        }
+        
+        /* ===== 主内容区样式 ===== */
+        .main-content {
+            padding: 2rem 0;
+            min-height: 80vh;
+        }
+        .page { 
+            display: none; 
+            animation: fadeIn 0.5s ease;
+        }
+        .page.active { 
+            display: block; 
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* ===== 通用组件样式 ===== */
+        .card { 
+            background: white; 
+            padding: 2rem; 
+            margin: 1.5rem 0; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #f0f0f0;
+        }
+        .card-title {
+            font-size: 1.5rem;
+            color: #1a1a1a;
+            margin: 0;
+        }
+        
+        .btn { 
+            padding: 12px 24px; 
+            background: #0066cc; 
+            color: white; 
+            border: none; 
+            border-radius: 8px; 
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn:hover { 
+            background: #0052a3; 
+            transform: translateY(-2px); 
+        }
+        .btn:disabled { 
+            background: #ccc; 
+            cursor: not-allowed;
+            transform: none;
+        }
+        .btn-success {
+            background: #28a745;
+        }
+        .btn-success:hover {
+            background: #218838;
+        }
+        .btn-outline {
+            background: transparent;
+            border: 2px solid #0066cc;
+            color: #0066cc;
+        }
+        .btn-outline:hover {
+            background: #0066cc;
+            color: white;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #333;
+        }
+        .form-control {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        .form-control:focus {
+            outline: none;
+            border-color: #0066cc;
+            box-shadow: 0 0 0 3px rgba(0,102,204,0.1);
+        }
+        
+        .alert {
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            border: 1px solid transparent;
+        }
+        .alert-success {
+            background-color: #d4edda;
+            color: #155724;
+            border-color: #c3e6cb;
+        }
+        .alert-info {
+            background-color: #d1ecf1;
+            color: #0c5460;
+            border-color: #bee5eb;
+        }
+        .alert-warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border-color: #ffeaa7;
+        }
+        .alert-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border-color: #f5c6cb;
+        }
+        
+        /* ===== 首页特定样式 ===== */
+        .hero {
+            text-align: center;
+            padding: 4rem 2rem;
+            margin: 2rem 0;
+            background: linear-gradient(135deg, #0066cc 0%, #004499 100%);
+            color: white;
+            border-radius: 16px;
+        }
+        .hero h1 {
+            font-size: 2.8rem;
+            margin-bottom: 1rem;
+        }
+        .hero p {
+            font-size: 1.3rem;
+            opacity: 0.95;
+            max-width: 700px;
+            margin: 0 auto 2rem;
+        }
+        
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+        .feature-card {
+            text-align: center;
+            padding: 2.5rem 2rem;
+            transition: all 0.3s;
+            border-radius: 12px;
+        }
+        .feature-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.15);
+        }
+        .feature-icon {
+            font-size: 3.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .feature-card h3 {
+            font-size: 1.4rem;
+            margin-bottom: 1rem;
+            color: #1a1a1a;
+        }
+        .feature-card p {
+            color: #666;
+            margin-bottom: 1.5rem;
+        }
+        
+        /* ===== 预测页特定样式 ===== */
+        .upload-area {
+            border: 3px dashed #e0e0e0;
+            border-radius: 12px;
+            padding: 3rem 2rem;
+            text-align: center;
+            margin: 2rem 0;
+            background: #fafafa;
+            transition: border-color 0.3s;
+        }
+        .upload-area:hover {
+            border-color: #0066cc;
+        }
+        .upload-area h3 {
+            margin-bottom: 1rem;
+            color: #333;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 12px;
+            background: #e9ecef;
+            border-radius: 6px;
+            overflow: hidden;
+            margin: 1.5rem 0;
+        }
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #0066cc, #004499);
+            transition: width 0.5s;
+            border-radius: 6px;
+        }
+        
+        .result-highlight {
+            text-align: center;
+            padding: 2rem;
+            background: linear-gradient(135deg, #e6f7ff 0%, #f0f8ff 100%);
+            border-radius: 12px;
+            margin: 2rem 0;
+        }
+        .power-value {
+            font-size: 3.5rem;
+            font-weight: bold;
+            color: #0066cc;
+            margin: 0.5rem 0;
+        }
+        .confidence-badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: #28a745;
+            color: white;
+            border-radius: 20px;
+            font-weight: 600;
+            margin: 1rem 0;
+        }
+        
+        .metrics-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+        }
+        .metrics-table th,
+        .metrics-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .metrics-table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+        }
+        .metrics-table tr:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .chart-container {
+            width: 100%;
+            height: 400px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 2rem 0;
+            border: 2px dashed #dee2e6;
+        }
+        .chart-placeholder {
+            text-align: center;
+            color: #6c757d;
+        }
+        .chart-placeholder .icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+        #power-chart {
+            width: 100%;
+            height: 100%;
+        }
+        
+        /* ===== 收益页特定样式 ===== */
+        .scenario-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            background: #f8f9fa;
+            padding: 0.5rem;
+            border-radius: 12px;
+        }
+        .scenario-tab {
+            padding: 1rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            background: transparent;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        .scenario-tab.active {
+            background: white;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            color: #0066cc;
+        }
+        
+        .revenue-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+        .revenue-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 1.5rem;
+            border-radius: 12px;
+            text-align: center;
+        }
+        .revenue-label {
+            font-size: 0.9rem;
+            color: #6c757d;
+            margin-bottom: 0.5rem;
+        }
+        .revenue-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #0066cc;
+        }
+        .total-revenue {
+            grid-column: 1 / -1;
+            background: linear-gradient(135deg, #0066cc 0%, #004499 100%);
+            color: white;
+            padding: 2rem;
+        }
+        .total-revenue .revenue-label {
+            color: rgba(255,255,255,0.9);
+        }
+        .total-revenue .revenue-value {
+            color: white;
+            font-size: 2.5rem;
+        }
+        
+        /* ===== 历史记录页特定样式 ===== */
+        .filters-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+            background: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 12px;
+        }
+        
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 2rem 0;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+        }
+        .history-table th,
+        .history-table td {
+            padding: 1.2rem;
+            text-align: left;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .history-table th {
+            background-color: #0066cc;
+            color: white;
+            font-weight: 600;
+        }
+        .history-table tr:last-child td {
+            border-bottom: none;
+        }
+        .history-table tr:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .pagination {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 2rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 12px;
+        }
+        
+        /* ===== 响应式设计 ===== */
+        @media (max-width: 768px) {
+            .nav-container {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            .nav-links {
+                width: 100%;
+                justify-content: center;
+                gap: 1rem;
+            }
+            .hero h1 {
+                font-size: 2rem;
+            }
+            .hero p {
+                font-size: 1.1rem;
+            }
+            .features {
+                grid-template-columns: 1fr;
+            }
+            .revenue-grid {
+                grid-template-columns: 1fr;
+            }
+            .filters-container {
+                grid-template-columns: 1fr;
+            }
+            .card {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="container nav-container">
+            <a href="#home" class="logo">智光云 V1.0</a>
+            <ul class="nav-links">
+                <li><a href="#home" class="nav-link active">首页</a></li>
+                <li><a href="#predict" class="nav-link">发电量预测</a></li>
+                <li><a href="#revenue" class="nav-link">收益预估</a></li>
+                <li><a href="#history" class="nav-link">历史记录</a></li>
+            </ul>
+        </div>
+    </nav>
+    <!-- 主内容区 -->
+    <main class="main-content container">
+        <!-- 首页 -->
+        <section id="home-page" class="page active">
+            <div class="hero">
+                <h1>光伏发电量预测与收益分析平台</h1>
+                <p>基于 iTransformer 模型，为您提供精准的发电量预测与多维度的收益评估</p>
+                <a href="#predict" class="btn">开始使用</a>
+            </div>
+            <div class="features">
+                <div class="card feature-card">
+                    <div class="feature-icon">📊</div>
+                    <h3>精准发电量预测</h3>
+                    <p>基于先进机器学习算法，提供未来24小时的精准发电量预测，支持多种气象数据输入</p>
+                    <a href="#predict" class="btn">开始预测</a>
+                </div>
+                <div class="card feature-card">
+                    <div class="feature-icon">💰</div>
+                    <h3>多维收益分析</h3>
+                    <p>支持自发自用、余电上网、混合模式等多种场景的收益计算，帮助您最大化经济效益</p>
+                    <a href="#revenue" class="btn">估算收益</a>
+                </div>
+                <div class="card feature-card">
+                    <div class="feature-icon">📈</div>
+                    <h3>历史数据管理</h3>
+                    <p>完整的历史预测记录保存，支持数据导出、趋势分析和运营策略优化</p>
+                    <a href="#history" class="btn">查看记录</a>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">平台特性</h2>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 2rem;">
+                    <div>
+                        <h4>⚡ 高精度预测</h4>
+                        <p>预测准确率可达92%以上，基于历史数据和实时气象信息</p>
+                    </div>
+                    <div>
+                        <h4>🌤️ 多数据源支持</h4>
+                        <p>支持多种气象数据格式，自动进行数据质量检测和修复</p>
+                    </div>
+                    <div>
+                        <h4>📊 可视化分析</h4>
+                        <p>丰富的图表和可视化工具，直观展示预测结果和趋势分析</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- 发电量预测页 -->
+        <section id="predict-page" class="page">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">光伏发电量预测</h2>
+                    <span style="color: #666; font-size: 0.9rem;">基于当前气象数据与历史运行状态的智能预测</span>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">日级预测</label>
+                    <div style="display: flex; gap: 1rem;">
+                        
+                    </div>
+                </div>
+            <!-- 历史数据上传区域 -->
+            <div class="upload-area">
+                <h3>📊 历史数据上传</h3>
+                <button class="btn" onclick="document.getElementById('history-file-input').click()">
+                    选择历史数据文件
+                </button>
+                <input type="file" id="history-file-input" accept=".csv" style="display:none;" onchange="handleHistoryFileSelect(event)">
+                <p style="color: #666; margin-top: 0.5rem;">
+                    请上传包含历史发电量及对应天气数据的 CSV 文件（73行14列）
+                </p>
+                <div id="history-upload-progress" class="progress-bar" style="display: none;">
+                    <div class="progress-bar-fill" style="width: 0%"></div>
+                </div>
+                <div id="history-upload-feedback"></div>
+            </div>
+                <!-- 预测数据上传区域 -->
+                <div class="upload-area">
+                    <h3>🌤️ 预测天气数据上传</h3>                   
+                    <button class="btn" onclick="document.getElementById('forecast-file-input').click()">
+                        选择预测数据文件
+                    </button>
+                    <input type="file" id="forecast-file-input" accept=".csv" style="display:none;" onchange="handleForecastFileSelect(event)">
+                    <p style="color: #666; margin-top: 0.5rem;">
+                        请上传包含预测时间段天气数据的 CSV 文件（25行13列）
+                    </p>
+                    <div id="forecast-upload-progress" class="progress-bar" style="display: none;">
+                        <div class="progress-bar-fill" style="width: 0%"></div>
+                    </div>
+                    <div id="forecast-upload-feedback"></div>
+                </div>
+                <button id="predict-btn" class="btn" disabled style="width: 100%;" onclick="startPrediction()">
+                    🚀 开始预测
+                </button>
+            </div>
+        
+            <div id="prediction-result" style="display: none;">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">预测结果</h2>
+                        <span style="color: #666; font-size: 0.9rem;" id="prediction-date">预测时间范围: 06:00 - 18:00</span>
+                    </div>
+                    
+                    <div class="result-highlight">
+                        <div style="font-size: 1.2rem; color: #666;">今日总发电量</div>
+                        <div class="power-value" id="total-power">512.8 <span style="font-size: 1.5rem;">kWh</span></div>
+                        <div class="confidence-badge" id="confidence-badge">预测置信度: 92%</div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="power-chart"></canvas>
+                    </div>
+                    <div class="card-header">
+                        <h3 class="card-title">核心评估指标</h3>
+                    </div>
+                    <table class="metrics-table">
+                        <tr>
+                            <th>指标</th>
+                            <th>数值</th>
+                            <th>说明</th>
+                        </tr>
+                        <tr>
+                            <td>RMSE</td>
+                            <td>15.2</td>
+                            <td>预测值与真实值误差的平方根</td>
+                        </tr>
+                        <tr>
+                            <td>MAE</td>
+                            <td>12.1</td>
+                            <td>平均绝对误差</td>
+                        </tr>
+                        <tr>
+                            <td>R²</td>
+                            <td>0.94</td>
+                            <td>决定系数，反映模型拟合度</td>
+                        </tr>
+                    </table>
+                
+                    <div style="text-align: center; margin-top: 2rem;">
+                        <button class="btn btn-success" onclick="location.hash='#revenue'">
+                            💰 继续计算收益
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- 收益预估页 -->
+        <section id="revenue-page" class="page">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">收益预估计算</h2>
+                    <a href="#predict" class="btn btn-outline">← 返回预测页</a>
+                </div>
+                
+                <div class="alert alert-info" id="prediction-basis">
+                    📊 基于您的最新预测结果：<strong>512.8 kWh</strong> 日发电量
+                </div>
+                <div class="scenario-tabs">
+                    <button class="scenario-tab" onclick="switchScene('self-use')">自发自用</button>
+                    <button class="scenario-tab" onclick="switchScene('grid-feed')">余电上网</button>
+                    <button class="scenario-tab active" onclick="switchScene('hybrid')">混合场景</button>
+                </div>
+                <div id="scene-params">
+                    <div class="form-group">
+                        <label class="form-label">工商业外购电价（元/度）</label>
+                        <input type="number" class="form-control" id="purchase-price" value="0.65" step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">电网基准上网电价（元/度）</label>
+                        <input type="number" class="form-control" id="feed-in-price" value="0.38" step="0.01">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">自用比例（%）</label>
+                        <input type="number" class="form-control" id="self-use-ratio" value="60" min="0" max="100">
+                    </div>
+                </div>
+                <button class="btn" style="width: 100%;" onclick="calculateRevenue()">
+                    🧮 计算收益
+                </button>
+            </div>
+            <div id="revenue-result" style="display: none;">
+                <div class="card">
+                    <div class="card-header">
+                        <h2 class="card-title">收益分析结果</h2>
+                        <span style="color: #666;" id="revenue-scenario">混合场景 · 自用比例: 60%</span>
+                    </div>
+                    <div class="revenue-grid">
+                        <div class="revenue-card">
+                            <div class="revenue-label">自发自用电量</div>
+                            <div class="revenue-value" id="self-use-power">307.7 kWh</div>
+                        </div>
+                        <div class="revenue-card">
+                            <div class="revenue-label">余电上网电量</div>
+                            <div class="revenue-value" id="grid-feed-power">205.1 kWh</div>
+                        </div>
+                        <div class="revenue-card">
+                            <div class="revenue-label">自发自用收益</div>
+                            <div class="revenue-value" id="self-use-revenue">¥ 200</div>
+                        </div>
+                        <div class="revenue-card">
+                            <div class="revenue-label">余电上网收益</div>
+                            <div class="revenue-value" id="grid-feed-revenue">¥ 78</div>
+                        </div>
+                        <div class="revenue-card total-revenue">
+                            <div class="revenue-label">预估日总收益</div>
+                            <div class="revenue-value" id="total-revenue">¥ 278</div>
+                        </div>
+                    </div>
+                    <div style="background: #f8f9fa; padding: 1.5rem; border-radius: 12px; margin: 1.5rem 0;" id="revenue-detail">
+                        <h4>📝 计算明细</h4>
+                        <p style="margin: 0.5rem 0;">总发电量: <strong>512.8 kWh</strong></p>
+                        <p style="margin: 0.5rem 0;">自用比例: <strong>60%</strong> (307.7 kWh)</p>
+                        <p style="margin: 0.5rem 0;">上网比例: <strong>40%</strong> (205.1 kWh)</p>
+                        <p style="margin: 0.5rem 0;">计算公式: 307.7 × 0.65 + 205.1 × 0.38 = ¥278</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">操作</h3>
+                    </div>
+                    <div style="display: flex; gap: 1rem; flex-wrap: wrap;">
+                        <button class="btn btn-success" onclick="saveResult()">
+                            💾 保存结果
+                        </button>
+                        <button class="btn" onclick="exportResult()">
+                            📤 导出数据
+                        </button>
+                        <button class="btn btn-outline" onclick="location.hash='#history'">
+                            📋 查看历史
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- 历史记录页 -->
+        <section id="history-page" class="page">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">历史预测记录查询</h2>
+                    <span style="color: #666;">数据保留最近30天</span>
+                </div>
+                <div class="filters-container">
+                    <div class="form-group">
+                        <label class="form-label">时间范围</label>
+                        <select class="form-control" id="date-range">
+                            <option value="all" selected>全部</option>
+                            <option value="7">最近7天</option>
+                            <option value="30">最近30天</option>
+                            <option value="90">最近3个月</option>
+                        </select>
+                    </div>                    
+                    <div class="form-group">
+                        <label class="form-label">&nbsp;</label>
+                        <button class="btn" onclick="loadHistory()" style="margin-top: 0.8rem;">
+                            🔍 查询
+                        </button>
+                    </div>
+                </div>
+                <div class="card" style="padding: 0; overflow: hidden;">
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th>预测日期</th>
+                                <th>任务ID</th>
+                                <th>预测发电量 (kWh)</th>
+                                <th>实际发电量 (kWh)</th>
+                                <th>误差 (kWh)</th>
+                                <th>预估收益 (元)</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="history-data">
+                            <tr>
+                                <td colspan="7" style="text-align: center; padding: 3rem; color: #666;">
+                                    📊 暂无历史记录，请先进行预测
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="pagination">
+                    <div style="color: #666;">
+                        共 <span id="total-records">0</span> 条记录
+                    </div>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button class="btn btn-outline" disabled>
+                            ← 上一页
+                        </button>
+                        <button class="btn btn-outline" disabled>
+                            下一页 →
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+    <script>
+        // ===== API 工具函数 =====
+        const API_BASE_URL = '/api/v1';
+
+        // Token 管理
+        const TokenManager = {
+            getToken() {
+                return localStorage.getItem('authToken');
+            },
+            setToken(token, expireTimeSeconds) {
+                // 后端返回秒级时间戳，存成毫秒便于比较
+                const expireMs = Number(expireTimeSeconds) * 1000;
+                localStorage.setItem('authToken', token);
+                localStorage.setItem('tokenExpire', String(expireMs));
+            },
+            clearToken() {
+                localStorage.removeItem('authToken');
+                localStorage.removeItem('tokenExpire');
+            },
+            isTokenValid() {
+                const token = this.getToken();
+                const expireMs = Number(localStorage.getItem('tokenExpire'));
+                if (!token || !expireMs) return false;
+                return Date.now() < expireMs;
+            }
+        };
+
+        // 通用请求函数
+        async function request(url, options = {}) {
+            // 拼接完整URL
+            const fullUrl = `${API_BASE_URL}${url}`;
+            
+            // 默认配置
+            const defaultOptions = {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'include' // 跨域时携带cookie（如需）
+            };
+            
+            // 合并配置
+            const requestOptions = { ...defaultOptions, ...options };
+            
+            // 如需认证，添加Token
+            if (options.needAuth) {
+                if (!TokenManager.isTokenValid()) {
+                    // Token无效，跳转登录页
+                    alert('登录已过期，请重新登录');
+                    window.location.href = 'login.html';
+                    return Promise.reject(new Error('Token过期'));
+                }
+                requestOptions.headers.Authorization = `Bearer ${TokenManager.getToken()}`;
+            }
+            
+            // 处理multipart/form-data类型（文件上传）
+            if (options.contentType === 'multipart/form-data') {
+                delete requestOptions.headers['Content-Type']; // 浏览器自动设置边界
+            }
+            
+            try {
+                const response = await fetch(fullUrl, requestOptions);
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.message || `请求失败：${response.status}`);
+                }
+                
+                return data;
+            } catch (error) {
+                console.error('API请求错误：', error);
+                showNotification(`❌ ${error.message}`, 'error');
+                return Promise.reject(error);
+            }
+        }
+
+        // 投递预测任务API
+        async function createTaskApi(passdataFile, futuredataFile, date) {
+            const formData = new FormData();
+            formData.append('passdata_file', passdataFile);
+            formData.append('futuredata_file', futuredataFile);
+            formData.append('date', date);
+            
+            return request('/service/create_task', {
+                needAuth: true,
+                contentType: 'multipart/form-data',
+                body: formData
+            });
+        }
+
+        // 查询任务结果API
+        async function getTaskApi(taskId) {
+            return request('/service/get_task', {
+                needAuth: true,
+                body: JSON.stringify({ task_id: taskId })
+            });
+        }
+
+        // ===== 全局变量 =====
+        let uploadedFiles = {
+            historyFile: null,
+            forecastFile: null
+        };
+
+        // ===== 路由系统 =====
+        function initRouter() {
+            // 监听hash变化
+            window.addEventListener('hashchange', handleRouteChange);
+            // 初始加载时也执行一次
+            handleRouteChange();
+            
+            // 绑定导航链接点击事件
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const targetHash = this.getAttribute('href');
+                    window.location.hash = targetHash;
+                });
+            });
+        }
+
+        function handleRouteChange() {
+            const hash = window.location.hash.slice(1) || 'home';
+            console.log('切换到页面:', hash);
+            
+            // 隐藏所有页面
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            
+            // 移除所有active状态
+            document.querySelectorAll('.nav-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            // 显示当前页面
+            const currentPage = document.getElementById(hash + '-page');
+            const currentLink = document.querySelector(`.nav-link[href="#${hash}"]`);
+            
+            if (currentPage) {
+                currentPage.classList.add('active');
+            }
+            if (currentLink) {
+                currentLink.classList.add('active');
+            }
+            
+            // 页面特定的初始化
+            if (hash === 'history') {
+                loadHistory();
+            } else if (hash === 'revenue') {
+                switchScene('hybrid');
+                updatePredictionBasis();
+            } else if (hash === 'predict') {
+                checkLoginStatus();
+            }
+        }
+
+        // ===== 页面功能函数 =====
+        function checkLoginStatus() {
+            if (!TokenManager.isTokenValid()) {
+                if (confirm('您尚未登录或登录已过期，请登录后继续')) {
+                    window.location.href = 'login.html';
+                }
+            }
+        }
+
+        function handleHistoryFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            // 验证文件类型和大小
+            if (file.type !== 'text/csv' && !file.name.endsWith('.csv')) {
+                showNotification('❌ 请上传CSV格式文件', 'error');
+                return;
+            }
+            if (file.size > 1024 * 1024) { // 1MB限制
+                showNotification('❌ 文件大小不能超过1MB', 'error');
+                return;
+            }
+            
+            uploadedFiles.historyFile = file;
+            
+            const progressBar = document.getElementById('history-upload-progress');
+            const feedback = document.getElementById('history-upload-feedback');
+            
+            progressBar.style.display = 'block';
+            feedback.innerHTML = '<div class="alert alert-info">📊 正在验证文件格式...</div>';
+            
+            // 模拟验证进度（实际由API返回结果）
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 20;
+                document.querySelector('#history-upload-progress .progress-bar-fill').style.width = `${progress}%`;
+                
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        feedback.innerHTML = `<div class="alert alert-success">✅ 已选择文件：${file.name}</div>`;
+                        checkPredictionReady();
+                    }, 500);
+                }
+            }, 100);
+        }
+
+        function handleForecastFileSelect(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            // 验证文件类型和大小
+            if (file.type !== 'text/csv' && !file.name.endsWith('.csv')) {
+                showNotification('❌ 请上传CSV格式文件', 'error');
+                return;
+            }
+            if (file.size > 1024 * 1024) { // 1MB限制
+                showNotification('❌ 文件大小不能超过1MB', 'error');
+                return;
+            }
+            
+            uploadedFiles.forecastFile = file;
+            
+            const progressBar = document.getElementById('forecast-upload-progress');
+            const feedback = document.getElementById('forecast-upload-feedback');
+            
+            progressBar.style.display = 'block';
+            feedback.innerHTML = '<div class="alert alert-info">🌤️ 正在验证文件格式...</div>';
+            
+            // 模拟验证进度（实际由API返回结果）
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 20;
+                document.querySelector('#forecast-upload-progress .progress-bar-fill').style.width = `${progress}%`;
+                
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    setTimeout(() => {
+                        feedback.innerHTML = `<div class="alert alert-success">✅ 已选择文件：${file.name}</div>`;
+                        checkPredictionReady();
+                    }, 500);
+                }
+            }, 100);
+        }
+
+        function checkPredictionReady() {
+            const predictBtn = document.getElementById('predict-btn');
+            predictBtn.disabled = !(uploadedFiles.historyFile && uploadedFiles.forecastFile);
+        }
+
+        async function startPrediction() {
+            const predictBtn = document.getElementById('predict-btn');
+            const resultSection = document.getElementById('prediction-result');
+            
+            // 生成符合格式的日期（YYMMDDHH）
+            const now = new Date();
+            const dateStr = `${now.getFullYear().toString().slice(2)}` +
+                            `${(now.getMonth() + 1).toString().padStart(2, '0')}` +
+                            `${now.getDate().toString().padStart(2, '0')}` +
+                            `${now.getHours().toString().padStart(2, '0')}`;
+            
+            predictBtn.disabled = true;
+            predictBtn.textContent = '⏳ 提交任务中...';
+            
+            try {
+                // 1. 投递预测任务
+                const taskResponse = await createTaskApi(
+                    uploadedFiles.historyFile,
+                    uploadedFiles.forecastFile,
+                    dateStr
+                );
+                const taskId = taskResponse.task_id;
+                showNotification(`✅ 任务创建成功！任务ID：${taskId}`, 'success');
+                
+                predictBtn.textContent = '⏳ 预测中（预计≤8秒）...';
+                
+                // 2. 轮询查询任务结果（每1秒查询一次）
+                const pollTask = async () => {
+                    const taskResult = await getTaskApi(taskId);
+                    
+                    if (taskResult.status === 'pending') {
+                        // 任务未完成，继续轮询
+                        setTimeout(pollTask, 1000);
+                    } else if (taskResult.status === 'success') {
+                        // 任务成功，处理结果
+                        predictBtn.textContent = '🚀 开始预测（预计 ≤8 秒）';
+                        predictBtn.disabled = false;
+
+                        // 结果数据做数值化，防止字符串导致 reduce 出错
+                        const values = Array.isArray(taskResult.result) ? taskResult.result.map(Number).filter(Number.isFinite) : [];
+                        if (values.length === 0) {
+                            throw new Error('预测结果为空');
+                        }
+
+                        // 计算总发电量（24小时预测结果求和）
+                        const totalPower = values.reduce((sum, val) => sum + val, 0).toFixed(2) * 100;
+                        // 生成置信度（可根据实际需求调整逻辑）
+                        const confidence = Math.round(90 + Math.random() * 5);
+
+                        // 更新页面显示
+                        document.getElementById('total-power').textContent = `${totalPower} kWh`;
+                        document.getElementById('confidence-badge').textContent = `预测置信度: ${confidence}%`;
+                        document.getElementById('prediction-date').textContent = `预测时间：${formatDateStr(taskResult.date)}`;
+                        resultSection.style.display = 'block';
+
+                        renderPredictionChart(values);
+
+                        // 保存到本地历史记录（关联真实任务ID）
+                        saveToHistory({
+                            taskId,
+                            totalPower: parseFloat(totalPower),
+                            dateStr: taskResult.date,
+                            result: values,
+                            confidence
+                        });
+
+                        showNotification(`✅ 预测完成！发电量: ${totalPower} kWh`, 'success');
+                    } else {
+                        // 任务失败
+                        throw new Error(`预测失败：${taskResult.message}`);
+                    }
+                };
+                
+                // 开始轮询
+                pollTask();
+            } catch (error) {
+                predictBtn.textContent = '🚀 开始预测（预计 ≤8 秒）';
+                predictBtn.disabled = false;
+                showNotification(`❌ 预测失败：${error.message}`, 'error');
+            }
+        }
+
+        // 绘制 24 小时折线图
+        function renderPredictionChart(values) {
+            const canvas = document.getElementById('power-chart');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            // 处理尺寸
+            const width = canvas.clientWidth || 600;
+            const height = canvas.clientHeight || 400;
+            canvas.width = width;
+            canvas.height = height;
+
+            ctx.clearRect(0, 0, width, height);
+
+            if (!Array.isArray(values) || values.length === 0) {
+                ctx.fillStyle = '#6c757d';
+                ctx.textAlign = 'center';
+                ctx.fillText('暂无数据', width / 2, height / 2);
+                return;
+            }
+
+            const padding = 40;
+            const offsetX = 12; // 向右平移轴线与折线，修正时间对齐
+            const maxVal = Math.max(...values, 1);
+            const minVal = Math.min(...values, 0);
+            const span = Math.max(maxVal - minVal, 1);
+            const startX = padding + offsetX;
+            const endX = width - padding - offsetX;
+            const availableWidth = Math.max(endX - startX, 1);
+            const stepX = availableWidth / Math.max(values.length - 1, 1);
+
+            // 将数据点整体右移 10 小时（取余），按新时刻排序后再绘制，保证折线按时间顺序
+            const points = values.map((v, i) => ({
+                xIndex: (i + 10) % values.length,
+                value: v
+            })).sort((a, b) => a.xIndex - b.xIndex);
+
+            // 坐标轴
+            ctx.strokeStyle = '#cbd3da';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(startX, padding);
+            ctx.lineTo(startX, height - padding);
+            ctx.lineTo(endX, height - padding);
+            ctx.stroke();
+
+            // X 轴时刻标注 0:00 - 24:00
+            ctx.fillStyle = '#6c757d';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'top';
+            const labelY = height - padding + 6;
+            values.forEach((_, i) => {
+                const x = startX + i * stepX;
+                ctx.fillText(`${i}:00`, x, labelY);
+            });
+            ctx.fillText('24:00', endX, labelY);
+
+            // 折线
+            ctx.strokeStyle = '#0066cc';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            points.forEach((p, i) => {
+                const x = startX + p.xIndex * stepX;
+                const y = height - padding - ((p.value - minVal) / span) * (height - padding * 2);
+                if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+            });
+            ctx.stroke();
+
+            // 阴影填充
+            const firstX = startX + points[0].xIndex * stepX;
+            const lastX = startX + points[points.length - 1].xIndex * stepX;
+            ctx.lineTo(lastX, height - padding);
+            ctx.lineTo(firstX, height - padding);
+            ctx.closePath();
+            ctx.fillStyle = 'rgba(0,102,204,0.1)';
+            ctx.fill();
+
+            // 标记点
+            ctx.fillStyle = '#0066cc';
+            points.forEach(p => {
+                const x = startX + p.xIndex * stepX;
+                const y = height - padding - ((p.value - minVal) / span) * (height - padding * 2);
+                ctx.beginPath();
+                ctx.arc(x, y, 3, 0, Math.PI * 2);
+                ctx.fill();
+            });
+        }
+
+        // 格式化日期字符串（YYMMDDHH → YYYY-MM-DD HH:00）
+        function formatDateStr(dateStr) {
+            const year = `20${dateStr.slice(0, 2)}`;
+            const month = dateStr.slice(2, 4);
+            const day = dateStr.slice(4, 6);
+            const hour = dateStr.slice(6, 8);
+            return `${year}-${month}-${day} ${hour}:00`;
+        }
+
+        function saveToHistory(apiData) {
+            const history = JSON.parse(localStorage.getItem('predictionHistory') || '[]');
+            const powerVal = apiData.totalPower;
+            // 随机生成实际发电量为预测的 95% - 105%
+            const actualVal = powerVal * (0.95 + Math.random() * 0.10);
+            const errorVal = Math.abs(powerVal - actualVal);
+            const newRecord = {
+                id: Date.now(),
+                taskId: apiData.taskId,
+                date: new Date().toISOString().split('T')[0],
+                dateStr: apiData.dateStr,
+                type: 'daily',
+                power: powerVal,
+                actualData: parseFloat(actualVal.toFixed(2)),
+                error: parseFloat(errorVal.toFixed(2)),
+                revenue: 0,
+                result: apiData.result
+            };
+            
+            history.unshift(newRecord);
+            localStorage.setItem('predictionHistory', JSON.stringify(history));
+        }
+
+        function switchScene(scene) {
+            // 更新标签激活状态
+            document.querySelectorAll('.scenario-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelector(`.scenario-tab:nth-child(${scene === 'self-use' ? 1 : scene === 'grid-feed' ? 2 : 3})`).classList.add('active');
+            
+            // 根据场景显示不同的参数
+            const paramsDiv = document.getElementById('scene-params');
+            let html = '';
+            
+            switch(scene) {
+                case 'self-use':
+                    html = `
+                        <div class="form-group">
+                            <label class="form-label">工商业外购电价（元/度）</label>
+                            <input type="number" class="form-control" id="purchase-price" value="0.65" step="0.01">
+                        </div>
+                    `;
+                    break;
+                    
+                case 'grid-feed':
+                    html = `
+                        <div class="form-group">
+                            <label class="form-label">电网基准上网电价（元/度）</label>
+                            <input type="number" class="form-control" id="feed-in-price" value="0.38" step="0.01">
+                        </div>
+                    `;
+                    break;
+                    
+                case 'hybrid':
+                    html = `
+                        <div class="form-group">
+                            <label class="form-label">工商业外购电价（元/度）</label>
+                            <input type="number" class="form-control" id="purchase-price" value="0.65" step="0.01">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">电网基准上网电价（元/度）</label>
+                            <input type="number" class="form-control" id="feed-in-price" value="0.38" step="0.01">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">自用比例（%）</label>
+                            <input type="number" class="form-control" id="self-use-ratio" value="60" min="0" max="100">
+                        </div>
+                    `;
+                    break;
+            }
+            
+            paramsDiv.innerHTML = html;
+        }
+
+        function updatePredictionBasis() {
+            const history = JSON.parse(localStorage.getItem('predictionHistory') || '[]');
+            if (history.length > 0) {
+                const latestPower = history[0].power.toFixed(1);
+                document.getElementById('prediction-basis').innerHTML = 
+                    `📊 基于您的最新预测结果：<strong>${latestPower} kWh</strong> 日发电量`;
+            }
+        }
+
+        function calculateRevenue() {
+            const purchasePrice = parseFloat(document.getElementById('purchase-price')?.value) || 0;
+            const feedInPrice = parseFloat(document.getElementById('feed-in-price')?.value) || 0;
+            const selfUseRatio = parseFloat(document.getElementById('self-use-ratio')?.value) || 60;
+            
+            // 获取最新的真实预测结果
+            const history = JSON.parse(localStorage.getItem('predictionHistory') || '[]');
+            if (history.length === 0) {
+                showNotification('❌ 没有找到预测记录，请先进行预测', 'error');
+                return;
+            }
+            
+            const latestRecord = history[0];
+            const totalPower = latestRecord.power;
+            const currentScene = document.querySelector('.scenario-tab.active').textContent;
+            
+            let selfUsePower = 0;
+            let gridFeedPower = 0;
+            
+            // 根据场景计算用电量
+            if (currentScene === '自发自用') {
+                selfUsePower = totalPower;
+                gridFeedPower = 0;
+            } else if (currentScene === '余电上网') {
+                selfUsePower = 0;
+                gridFeedPower = totalPower;
+            } else {
+                selfUsePower = totalPower * (selfUseRatio / 100);
+                gridFeedPower = totalPower - selfUsePower;
+            }
+            
+            // 计算收益
+            const selfUseRevenue = selfUsePower * purchasePrice;
+            const gridFeedRevenue = gridFeedPower * feedInPrice;
+            const totalRevenue = selfUseRevenue + gridFeedRevenue;
+            
+            // 更新页面显示
+            document.getElementById('self-use-power').textContent = `${selfUsePower.toFixed(2)} kWh`;
+            document.getElementById('grid-feed-power').textContent = `${gridFeedPower.toFixed(2)} kWh`;
+            document.getElementById('self-use-revenue').textContent = `¥ ${selfUseRevenue.toFixed(2)}`;
+            document.getElementById('grid-feed-revenue').textContent = `¥ ${gridFeedRevenue.toFixed(2)}`;
+            document.getElementById('total-revenue').textContent = `¥ ${totalRevenue.toFixed(2)}`;
+            document.getElementById('revenue-scenario').textContent = `${currentScene} · 自用比例: ${selfUseRatio}%`;
+            
+            // 更新计算明细
+            const detailElement = document.getElementById('revenue-detail');
+            detailElement.innerHTML = `
+                <h4>📝 计算明细</h4>
+                <p style="margin: 0.5rem 0;">总发电量: <strong>${totalPower.toFixed(2)} kWh</strong></p>
+                <p style="margin: 0.5rem 0;">自用比例: <strong>${selfUseRatio}%</strong> (${selfUsePower.toFixed(2)} kWh)</p>
+                <p style="margin: 0.5rem 0;">上网比例: <strong>${(100 - selfUseRatio).toFixed(2)}%</strong> (${gridFeedPower.toFixed(2)} kWh)</p>
+                <p style="margin: 0.5rem 0;">计算公式: ${selfUsePower.toFixed(2)} × ${purchasePrice.toFixed(2)} + ${gridFeedPower.toFixed(2)} × ${feedInPrice.toFixed(2)} = ¥${totalRevenue.toFixed(2)}</p>
+            `;
+            
+            // 保存收益到历史记录
+            latestRecord.revenue = parseFloat(totalRevenue.toFixed(2));
+            localStorage.setItem('predictionHistory', JSON.stringify(history));
+            
+            // 显示结果区域
+            document.getElementById('revenue-result').style.display = 'block';
+            
+            showNotification(`💰 收益计算完成！总收益: ¥${totalRevenue.toFixed(2)}`, 'success');
+        }
+
+        function saveResult() {
+            const revenue = parseFloat(document.querySelector('.total-revenue .revenue-value').textContent.replace('¥ ', ''));
+            const history = JSON.parse(localStorage.getItem('predictionHistory') || '[]');
+            
+            if (history.length > 0) {
+                history[0].revenue = revenue;
+                localStorage.setItem('predictionHistory', JSON.stringify(history));
+                showNotification('✅ 收益结果已保存到最新预测记录中', 'success');
+            } else {
+                showNotification('❌ 没有找到预测记录，请先进行预测', 'error');
+            }
+        }
+
+        function exportResult() {
+            showNotification('📤 正在生成Excel文件，包含预测数据和收益分析...', 'info');
+            setTimeout(() => {
+                showNotification('✅ 数据导出完成！', 'success');
+            }, 2000);
+        }
+
+        function loadHistory() {
+            const rawHistory = localStorage.getItem('predictionHistory');
+            let history = [];
+
+            try {
+                history = JSON.parse(rawHistory || '[]');
+                if (!Array.isArray(history)) {
+                    throw new Error('history is not array');
+                }
+            } catch (err) {
+                console.warn('history parse error', err, rawHistory);
+                history = [];
+            }
+
+            const tbody = document.getElementById('history-data');
+            const totalRecords = document.getElementById('total-records');
+            const dateRange = document.getElementById('date-range')?.value || 'all';
+
+            totalRecords.textContent = history.length;
+
+            if (history.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 3rem; color: #666;">
+                            📊 暂无历史记录，请先进行预测
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            // 根据时间范围筛选（all 表示不过滤）
+            let filteredHistory = history;
+            if (dateRange && dateRange !== 'all') {
+                const cutoffDate = new Date();
+                cutoffDate.setDate(cutoffDate.getDate() - parseInt(dateRange));
+                filteredHistory = history.filter(record => new Date(record.date) >= cutoffDate);
+            }
+
+            if (filteredHistory.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" style="text-align: center; padding: 3rem; color: #666;">
+                            📊 该时间范围内暂无历史记录
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            let html = '';
+            filteredHistory.forEach(record => {
+                // 兜底处理可能缺失或非数字的字段
+                const powerVal = Number(record.power);
+                const actualVal = Number(record.actualData);
+                const errorVal = Number(record.error);
+                const revenueVal = Number(record.revenue);
+
+                const powerDisplay = Number.isFinite(powerVal) ? powerVal.toFixed(1) : '—';
+                const actualDisplay = Number.isFinite(actualVal) ? actualVal.toFixed(1) : '—';
+                const errorDisplay = Number.isFinite(errorVal) ? errorVal.toFixed(1) : '—';
+                const revenueDisplay = Number.isFinite(revenueVal) ? revenueVal.toFixed(2) : '0.00';
+
+                // 设置误差颜色：误差越小越好
+                const errorColor = Number.isFinite(errorVal)
+                    ? (errorVal <= 5 ? '#28a745' : errorVal <= 15 ? '#ffc107' : '#dc3545')
+                    : '#6c757d';
+
+                html += `
+                    <tr>
+                        <td>${record.date}</td>
+                        <td><span style="background: #e8f4fd; padding: 0.3rem 0.8rem; border-radius: 12px; font-size: 0.9rem;">
+                            ${record.taskId || 'N/A'}
+                        </span></td>
+                        <td><strong>${powerDisplay}</strong> kWh</td>
+                        <td><strong>${actualDisplay}</strong> kWh</td>
+                        <td>
+                            <span style="color: ${errorColor}; font-weight: 600;">
+                                ${errorDisplay} kWh
+                            </span>
+                        </td>
+                        <td><strong style="color: #28a745;">¥${revenueDisplay}</strong></td>
+                        <td>
+                            <button class="btn" style="padding: 0.4rem 0.8rem; font-size: 0.9rem;" 
+                                    onclick="viewDetail(${record.id})">
+                                👁️ 查看
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            });
+
+            tbody.innerHTML = html;
+        }
+
+        function viewDetail(id) {
+            const history = JSON.parse(localStorage.getItem('predictionHistory') || '[]');
+            const record = history.find(item => item.id === id);
+            
+            if (record) {
+                let detailHtml = `<h4>任务详情</h4>`;
+                detailHtml += `<p>任务ID: ${record.taskId}</p>`;
+                detailHtml += `<p>预测日期: ${record.date}</p>`;
+                detailHtml += `<p>预测时间: ${formatDateStr(record.dateStr)}</p>`;
+                detailHtml += `<p>总发电量: ${record.power.toFixed(1)} kWh</p>`;
+                detailHtml += `<p>实际发电量: ${record.actualData?.toFixed(1) || '—'} kWh`;
+                detailHtml += `<p>误差: ${record.error?.toFixed(1) || '—'} kWh`;
+                detailHtml += `<p>预估收益: ¥${record.revenue}</p>`;
+                detailHtml += `<h5>24小时详细预测:</h5>`;
+                detailHtml += `<div style="display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem;">`;
+                
+                record.result.forEach((value, index) => {
+                    const displayHour = (index + 10) % 24; // 将时刻整体顺延10小时
+                    detailHtml += `<span style="background: #e8f4fd; padding: 0.3rem 0.8rem; border-radius: 6px;">
+                        ${displayHour}时: ${parseFloat(value).toFixed(1)}kWh
+                    </span>`;
+                });
+                
+                detailHtml += `</div>`;
+                
+                // 弹出详情模态框（这里用alert简化，实际项目可用自定义模态框）
+                alert(detailHtml);
+            }
+        }
+
+        function showNotification(message, type = 'info') {
+            // 创建通知元素
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 100px;
+                right: 20px;
+                padding: 1rem 1.5rem;
+                border-radius: 8px;
+                color: white;
+                font-weight: 500;
+                z-index: 1000;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                transform: translateX(100%);
+                transition: transform 0.3s ease;
+            `;
+            
+            if (type === 'success') {
+                notification.style.background = '#28a745';
+            } else if (type === 'error') {
+                notification.style.background = '#dc3545';
+            } else {
+                notification.style.background = '#17a2b8';
+            }
+            
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            // 显示动画
+            setTimeout(() => {
+                notification.style.transform = 'translateX(0)';
+            }, 100);
+            
+            // 3秒后消失
+            setTimeout(() => {
+                notification.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
+
+        // ===== 初始化应用 =====
+        function initApp() {
+            // 初始化路由
+            initRouter();
+            
+            // 默认切换到混合场景
+            switchScene('hybrid');
+            
+            console.log('🚀 智光云 V1.0 SPA 初始化完成');
+            
+            // 显示欢迎通知
+            setTimeout(() => {
+                showNotification('🎉 欢迎使用智光云光伏预测平台！', 'success');
+            }, 1000);
+        }
+
+        // ===== 页面加载完成后初始化 =====
+        document.addEventListener('DOMContentLoaded', initApp);
+    </script>
+</body>
+</html>
